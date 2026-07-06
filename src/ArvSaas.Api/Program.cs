@@ -1,9 +1,13 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
+using ArvSaas.Api.DevAuth;
 using ArvSaas.Application.Features.Deals.Commands;
 using ArvSaas.Infrastructure;
+using ArvSaas.Infrastructure.Persistence;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Serilog;
 
@@ -15,10 +19,22 @@ builder.Host.UseSerilog((ctx, cfg) => cfg
     .Enrich.FromLogContext()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture));
 
-// ---------- Auth: Microsoft Entra External ID ----------
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+// ---------- Authentication ----------
+// Development: fake authenticated user with a tenant claim (Swagger-testable).
+// Everywhere else: real JWTs from Microsoft Entra External ID.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services
+        .AddAuthentication(DevAuthenticationHandler.SchemeName)
+        .AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(
+            DevAuthenticationHandler.SchemeName, _ => { });
+}
+else
+{
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+}
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AnalystOrAbove", p => p.RequireRole("Analyst", "Investor", "Admin"))
@@ -56,6 +72,15 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
     .AllowAnyMethod()));
 
 var app = builder.Build();
+
+// ---------- Development bootstrap: migrate DB + seed dev tenant ----------
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+    await DevDataSeeder.SeedAsync(db);
+}
 
 app.UseSerilogRequestLogging();
 app.UseSwagger();

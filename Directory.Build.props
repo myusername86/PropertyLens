@@ -2,7 +2,7 @@
   <!-- Central build settings applied to ALL projects in the solution.
        Professional repos define these once, not per-csproj. -->
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
