@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore ArvSaas.sln
+
+      - name: Build
+        run: dotnet build ArvSaas.sln --no-restore -c Release
+
+      - name: Test
+        run: dotnet test ArvSaas.sln --no-build -c Release --verbosity normal
+
+  # Phase 5: add a deploy job here
+  # - Build Docker image, push to GHCR or ACR
+  # - Deploy to Azure App Service with azure/webapps-deploy@v3
+  #   using a publish profile stored in GitHub Secrets
