@@ -4,13 +4,16 @@ import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DealStage } from '../api/types';
 import type { Deal } from '../api/types';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
 import { DealCard } from '../features/deals/DealCard';
+import { DealDetailDrawer } from '../features/deals/DealDetailDrawer';
 import { useDeals } from '../features/deals/hooks';
+import { useUiStore } from '../store/uiStore';
 
 const columns: { stage: DealStage; title: string }[] = [
   { stage: DealStage.New, title: 'New' },
@@ -21,12 +24,19 @@ const columns: { stage: DealStage; title: string }[] = [
 
 export function DealsPage() {
   const { data: deals, isLoading, error } = useDeals();
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const searchQuery = useUiStore((state) => state.searchQuery).trim().toLowerCase();
 
   if (error) {
     return <Alert severity="error">Could not load deals: {error.message}</Alert>;
   }
 
-  const all = deals ?? [];
+  const all = (deals ?? []).filter(
+    (deal) =>
+      searchQuery === '' ||
+      deal.address.toLowerCase().includes(searchQuery) ||
+      deal.city.toLowerCase().includes(searchQuery),
+  );
 
   return (
     <>
@@ -60,7 +70,8 @@ export function DealsPage() {
                 sx={{
                   minWidth: 280,
                   flex: '1 1 0',
-                  backgroundColor: '#F1F3F0',
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                   borderRadius: 2,
                   p: 1.5,
                 }}
@@ -75,7 +86,11 @@ export function DealsPage() {
                   {isLoading ? (
                     <Skeleton variant="rounded" height={140} />
                   ) : (
-                    columnDeals.map((deal: Deal) => <DealCard key={deal.id} deal={deal} />)
+                    columnDeals.map((deal: Deal, index: number) => (
+                      <div key={deal.id} className="rise-in" style={{ animationDelay: `${index * 60}ms` }}>
+                        <DealCard deal={deal} onOpen={() => setSelectedDeal(deal)} />
+                      </div>
+                    ))
                   )}
                 </Stack>
               </Box>
@@ -83,6 +98,7 @@ export function DealsPage() {
           })}
         </Box>
       )}
+      <DealDetailDrawer deal={selectedDeal} onClose={() => setSelectedDeal(null)} />
     </>
   );
 }
