@@ -25,7 +25,25 @@ jobs:
       - name: Test
         run: dotnet test ArvSaas.sln --no-build -c Release --verbosity normal
 
-  # Phase 5: add a deploy job here
-  # - Build Docker image, push to GHCR or ACR
-  # - Deploy to Azure App Service with azure/webapps-deploy@v3
-  #   using a publish profile stored in GitHub Secrets
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

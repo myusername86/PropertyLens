@@ -7,35 +7,46 @@ import Typography from '@mui/material/Typography';
 import { DealStage } from '../../api/types';
 import type { Deal } from '../../api/types';
 import { MoneyText } from '../../components/MoneyText';
+import { PropertyImage } from '../../components/PropertyImage';
 import { RiskBadge } from '../../components/RiskBadge';
 import { useTransitionDeal } from './hooks';
 
-export function DealCard({ deal }: { deal: Deal }) {
+interface DealCardProps {
+  deal: Deal;
+  onOpen?: () => void;
+}
+
+export function DealCard({ deal, onOpen }: DealCardProps) {
   const transition = useTransitionDeal();
 
-  const act = (action: 'approve' | 'reject') =>
+  const act = (event: React.MouseEvent, action: 'approve' | 'reject') => {
+    event.stopPropagation();
     transition.mutate({ id: deal.id, action });
+  };
 
   return (
-    <Card>
-      <CardContent sx={{ pb: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Box>
-            <Typography variant="subtitle2">{deal.address}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {deal.city}
-            </Typography>
-          </Box>
+    <Card onClick={onOpen} sx={{ cursor: onOpen ? 'pointer' : 'default', overflow: 'hidden' }}>
+      <Box sx={{ position: 'relative' }}>
+        <PropertyImage dealId={deal.id} alt={deal.address} height={120} zoomOnHover />
+        <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
           <RiskBadge level={deal.riskLevel} />
-        </Stack>
+        </Box>
+      </Box>
 
-        <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-          <Box>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              ARV
-            </Typography>
-            <MoneyText amount={deal.afterRepairValue} variant="body2" sx={{ fontWeight: 600 }} />
-          </Box>
+      <CardContent sx={{ pb: 1.5, '&:last-child': { pb: 1.5 } }}>
+        <MoneyText
+          amount={deal.afterRepairValue}
+          variant="h6"
+          sx={{ display: 'block', lineHeight: 1.2 }}
+        />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {deal.address}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          {deal.city}
+        </Typography>
+
+        <Stack direction="row" spacing={2} sx={{ mb: deal.stage === DealStage.Analyzing ? 1.5 : 0 }}>
           <Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
               Profit
@@ -54,10 +65,20 @@ export function DealCard({ deal }: { deal: Deal }) {
 
         {deal.stage === DealStage.Analyzing && (
           <Stack direction="row" spacing={1}>
-            <Button size="small" variant="contained" onClick={() => act('approve')} disabled={transition.isPending}>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={(event) => act(event, 'approve')}
+              disabled={transition.isPending}
+            >
               Approve
             </Button>
-            <Button size="small" color="error" onClick={() => act('reject')} disabled={transition.isPending}>
+            <Button
+              size="small"
+              color="error"
+              onClick={(event) => act(event, 'reject')}
+              disabled={transition.isPending}
+            >
               Reject
             </Button>
           </Stack>

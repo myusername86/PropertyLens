@@ -196,7 +196,7 @@ export function NewDealPage() {
 
         <Grid size={{ xs: 12, md: 5 }}>
           {verdict ? (
-            <Card sx={{ borderColor: 'primary.main', borderWidth: 2 }}>
+            <Card className="rise-in" sx={{ borderColor: 'primary.main', borderWidth: 2 }}>
               <CardContent>
                 <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="h6">Investment verdict</Typography>
@@ -245,7 +245,7 @@ export function NewDealPage() {
               </CardContent>
             </Card>
           ) : (
-            <Card sx={{ backgroundColor: '#F1F3F0', borderStyle: 'dashed' }}>
+            <Card sx={{ borderStyle: 'dashed' }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Verdict appears here
