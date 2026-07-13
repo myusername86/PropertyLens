@@ -1,6 +1,7 @@
 using ArvSaas.Application.Common.Interfaces;
 using ArvSaas.Infrastructure.Persistence;
 using ArvSaas.Infrastructure.Tenancy;
+using ArvSaas.Infrastructure.Billing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,8 @@ public static class DependencyInjection
                 npgsql => npgsql.EnableRetryOnFailure(3)));
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        services.Configure<StripeOptions>(config.GetSection(StripeOptions.SectionName));
+        services.AddScoped<IBillingService, StripeBillingService>();
 
         return services;
     }

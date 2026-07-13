@@ -12,6 +12,7 @@ using Microsoft.Identity.Web;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // ---------- Structured logging (Serilog) ----------
 builder.Host.UseSerilog((ctx, cfg) => cfg
