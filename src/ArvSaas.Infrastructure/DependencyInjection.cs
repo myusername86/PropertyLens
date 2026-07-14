@@ -27,7 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.Configure<StripeOptions>(config.GetSection(StripeOptions.SectionName));
         services.AddScoped<IBillingService, StripeBillingService>();
-
+        services.AddScoped<StripeWebhookProcessor>();
         return services;
     }
 }

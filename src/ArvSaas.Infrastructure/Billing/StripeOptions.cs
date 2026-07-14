@@ -5,6 +5,7 @@ public sealed class StripeOptions
     public const string SectionName = "Stripe";
 
     public required string SecretKey { get; init; }
+    public string WebhookSecret { get; init; } = string.Empty;
     public required string ProMonthlyPriceId { get; init; }
     public required string ProYearlyPriceId { get; init; }
     public required string EnterpriseMonthlyPriceId { get; init; }
