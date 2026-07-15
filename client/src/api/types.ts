@@ -47,5 +47,16 @@ export interface Deal {
   aiRecommendation: string | null;
   createdAt: string;
 }
+export const SubscriptionPlan = {
+  Free: 0,
+  Pro: 1,
+  Enterprise: 2,
+} as const;
+export type SubscriptionPlan = (typeof SubscriptionPlan)[keyof typeof SubscriptionPlan];
 
+export const BillingInterval = {
+  Monthly: 0,
+  Yearly: 1,
+} as const;
+export type BillingInterval = (typeof BillingInterval)[keyof typeof BillingInterval];
 export type DealAction = 'analyze' | 'approve' | 'reject';

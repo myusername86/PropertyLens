@@ -1,3 +1,4 @@
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';
 import DashboardIcon from '@mui/icons-material/SpaceDashboard';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -34,6 +35,7 @@ const navItems = [
   { label: 'Dashboard', path: '/', icon: <DashboardIcon /> },
   { label: 'Deal pipeline', path: '/deals', icon: <ViewKanbanIcon /> },
   { label: 'New deal', path: '/deals/new', icon: <AddHomeWorkIcon />, highlight: true },
+  { label: 'Pricing', path: '/pricing', icon: <WorkspacePremiumIcon /> },
 ];
 
 /** Honest roadmap items — visible but explicitly not built yet. */
