@@ -7,6 +7,8 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppLayout } from './layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
+import { BillingSuccessPage } from './pages/BillingSuccessPage';
+import { PricingPage } from './pages/PricingPage';
 import { DealsPage } from './pages/DealsPage';
 import { NewDealPage } from './pages/NewDealPage';
 import { theme } from './theme';
@@ -24,6 +26,8 @@ const router = createBrowserRouter([
       { path: '/', element: <DashboardPage /> },
       { path: '/deals', element: <DealsPage /> },
       { path: '/deals/new', element: <NewDealPage /> },
+      { path: '/pricing', element: <PricingPage /> },
+      { path: '/billing/success', element: <BillingSuccessPage /> },
     ],
   },
 ]);
