@@ -1,3 +1,4 @@
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -82,6 +83,19 @@ export function DealCard({ deal, onOpen }: DealCardProps) {
               Reject
             </Button>
           </Stack>
+        )}
+
+        {transition.isError && (
+          <Alert
+            severity="error"
+            sx={{ mt: 1.5 }}
+            onClose={(event) => {
+              event.stopPropagation();
+              transition.reset();
+            }}
+          >
+            {transition.error.message}
+          </Alert>
         )}
       </CardContent>
     </Card>

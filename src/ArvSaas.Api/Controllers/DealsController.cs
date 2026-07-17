@@ -31,11 +31,11 @@ public class DealsController(ISender mediator) : ControllerBase
     }
 
     /// <summary>Move a deal through the pipeline: analyze | approve | reject.</summary>
-    [HttpPost("{id:guid}/{action}")]
+    [HttpPost("{id:guid}/{command}")]
     public async Task<ActionResult<DealDto>> Transition(
-        Guid id, string action, CancellationToken ct)
+        Guid id, string command, CancellationToken ct)
     {
-        var result = await mediator.Send(new TransitionDealCommand(id, action), ct);
+        var result = await mediator.Send(new TransitionDealCommand(id, command), ct);
         return result.IsSuccess ? Ok(result.Value) : UnprocessableEntity(new { error = result.Error });
     }
 }
