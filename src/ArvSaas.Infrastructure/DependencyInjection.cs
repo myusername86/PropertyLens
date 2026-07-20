@@ -1,3 +1,4 @@
+using ArvSaas.Infrastructure.Ai;
 using ArvSaas.Application.Common.Interfaces;
 using ArvSaas.Infrastructure.Persistence;
 using ArvSaas.Infrastructure.Tenancy;
@@ -27,6 +28,19 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.Configure<StripeOptions>(config.GetSection(StripeOptions.SectionName));
         services.AddScoped<IBillingService, StripeBillingService>();
+        services.Configure<AiOptions>(config.GetSection(AiOptions.SectionName));
+        services.Configure<AiOptions>(config.GetSection(AiOptions.SectionName));
+
+        var aiProvider = config["Ai:Provider"] ?? "Mock";
+        switch (aiProvider)
+        {
+            case "Mock":
+                services.AddScoped<IAiAnalysisService, MockAiProvider>();
+                break;
+            default:
+                services.AddScoped<IAiAnalysisService, MockAiProvider>();
+                break;
+        }
 
         return services;
     }

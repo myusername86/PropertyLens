@@ -38,4 +38,13 @@ public class DealsController(ISender mediator) : ControllerBase
         var result = await mediator.Send(new TransitionDealCommand(id, command), ct);
         return result.IsSuccess ? Ok(result.Value) : UnprocessableEntity(new { error = result.Error });
     }
+    /// <summary>Generate an AI recommendation for an analyzed deal (Pro/Enterprise).</summary>
+    [HttpPost("{id:guid}/ai-analysis")]
+    public async Task<ActionResult<object>> AnalyzeWithAi(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new EnrichDealCommand(id), ct);
+        return result.IsSuccess
+            ? Ok(new { dealId = id, aiInsight = result.Value })
+            : UnprocessableEntity(new { error = result.Error });
+    }
 }

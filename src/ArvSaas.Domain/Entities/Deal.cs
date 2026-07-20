@@ -35,6 +35,9 @@ public class Deal : AuditableEntity, ITenantOwned
     // --- AI enrichment (Phase 4) ---
     public string? AiRecommendation { get; set; }
     public int? AiConfidenceScore { get; set; }
+    public string? AiStrengths { get; set; }        // newline-separated
+    public string? AiRisks { get; set; }             // newline-separated
+    public string? AiNegotiationAdvice { get; set; }
 
     // --- Pipeline ---
     public DealStage Stage { get; private set; } = DealStage.New;
