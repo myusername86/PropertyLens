@@ -27,10 +27,25 @@ public record DealDto(
     decimal? MaxAllowableOffer,
     RiskLevel RiskLevel,
     string? AiRecommendation,
+    IReadOnlyList<string>? AiStrengths,
+    IReadOnlyList<string>? AiRisks,
+    string? AiNegotiationAdvice,
+    int? AiConfidenceScore,
     DateTimeOffset CreatedAt)
 {
     public static DealDto From(Deal d) => new(
         d.Id, d.Address, d.City, d.PurchasePrice, d.RenovationCost,
         d.Stage, d.AfterRepairValue, d.EstimatedProfit, d.RoiPercent,
-        d.MaxAllowableOffer, d.RiskLevel, d.AiRecommendation, d.CreatedAt);
+        d.MaxAllowableOffer, d.RiskLevel,
+        d.AiRecommendation,
+        SplitOrNull(d.AiStrengths),
+        SplitOrNull(d.AiRisks),
+        d.AiNegotiationAdvice,
+        d.AiConfidenceScore,
+        d.CreatedAt);
+
+    private static IReadOnlyList<string>? SplitOrNull(string? value) =>
+        string.IsNullOrEmpty(value)
+            ? null
+            : value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }
