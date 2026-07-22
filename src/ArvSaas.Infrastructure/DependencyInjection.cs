@@ -37,6 +37,9 @@ public static class DependencyInjection
             case "Mock":
                 services.AddScoped<IAiAnalysisService, MockAiProvider>();
                 break;
+            case "OpenAI":
+                services.AddHttpClient<IAiAnalysisService, OpenAiProvider>();
+                break;
             default:
                 services.AddScoped<IAiAnalysisService, MockAiProvider>();
                 break;
