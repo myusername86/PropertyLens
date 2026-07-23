@@ -36,11 +36,12 @@ const navItems = [
   { label: 'Deal pipeline', path: '/deals', icon: <ViewKanbanIcon /> },
   { label: 'New deal', path: '/deals/new', icon: <AddHomeWorkIcon />, highlight: true },
   { label: 'Pricing', path: '/pricing', icon: <WorkspacePremiumIcon /> },
+  { label: 'Analytics', path: '/analytics', icon: <InsightsIcon /> }
 ];
 
 /** Honest roadmap items — visible but explicitly not built yet. */
 const upcomingItems = [
-  { label: 'Analytics', icon: <InsightsIcon /> },
+
   { label: 'Portfolio map', icon: <MapIcon /> },
 ];
 

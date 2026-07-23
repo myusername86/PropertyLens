@@ -12,6 +12,7 @@ import { PricingPage } from './pages/PricingPage';
 import { DealsPage } from './pages/DealsPage';
 import { NewDealPage } from './pages/NewDealPage';
 import { theme } from './theme';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: '/deals/new', element: <NewDealPage /> },
       { path: '/pricing', element: <PricingPage /> },
       { path: '/billing/success', element: <BillingSuccessPage /> },
+      { path: '/analytics', element: <AnalyticsPage /> },
     ],
   },
 ]);
