@@ -31,6 +31,7 @@ public class DealsController(ISender mediator) : ControllerBase
     }
 
     /// <summary>Move a deal through the pipeline: analyze | approve | reject.</summary>
+    [Authorize(Roles = "Investor,Admin")]
     [HttpPost("{id:guid}/{command}")]
     public async Task<ActionResult<DealDto>> Transition(
         Guid id, string command, CancellationToken ct)

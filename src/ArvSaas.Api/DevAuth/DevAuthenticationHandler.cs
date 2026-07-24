@@ -18,12 +18,19 @@ public sealed class DevAuthenticationHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        // Local dev only: pick a role via ?role=Analyst|Investor|Admin to
+        // exercise authorization policies without a real Entra tenant.
+        var requestedRole = Request.Query["role"].ToString();
+        var role = requestedRole is "Analyst" or "Investor" or "Admin"
+            ? requestedRole
+            : "Admin";
+
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "dev-user-001"),
             new Claim(ClaimTypes.Name, "Local Dev User"),
             new Claim(ClaimTypes.Email, "dev@local.test"),
-            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim(ClaimTypes.Role, role),
             new Claim(HttpTenantProvider.TenantClaim, DevTenantId.ToString())
         };
 

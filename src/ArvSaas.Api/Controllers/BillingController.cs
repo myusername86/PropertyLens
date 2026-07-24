@@ -7,7 +7,7 @@ namespace ArvSaas.Api.Controllers;
 
 [ApiController]
 [Route("api/billing")]
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class BillingController(IBillingService billing, ITenantProvider tenant) : ControllerBase
 {
     public record CheckoutRequest(SubscriptionPlan Plan, BillingInterval Interval);
