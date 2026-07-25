@@ -1,7 +1,4 @@
-/**
- * Minimal typed fetch wrapper. In development, Vite proxies /api to the
- * .NET backend (see vite.config.ts), so no CORS setup is needed locally.
- */
+import { useRoleStore } from '../store/roleStore';
 
 const BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
 
@@ -24,8 +21,14 @@ async function parseError(response: Response): Promise<string> {
   }
 }
 
+function withRole(path: string): string {
+  const role = useRoleStore.getState().role;
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}role=${role}`;
+}
+
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${BASE_URL}${withRole(path)}`, {
     headers: { 'Content-Type': 'application/json' },
     ...init,
   });

@@ -1,4 +1,3 @@
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import AddHomeWorkIcon from '@mui/icons-material/AddHomeWork';
 import DashboardIcon from '@mui/icons-material/SpaceDashboard';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -7,6 +6,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import SearchIcon from '@mui/icons-material/Search';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
@@ -25,35 +25,42 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { RiskLevel } from '../api/types';
+import { RoleSwitcher } from '../components/RoleSwitcher';
 import { useDeals } from '../features/deals/hooks';
+import { AppRole, useRoleStore } from '../store/roleStore';
 import { useUiStore } from '../store/uiStore';
 import { accent, surfaces } from '../theme';
 
 const DRAWER_WIDTH = 236;
 
-const navItems = [
+interface NavItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+  highlight?: boolean;
+  minRole?: AppRole;
+}
+
+const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/', icon: <DashboardIcon /> },
   { label: 'Deal pipeline', path: '/deals', icon: <ViewKanbanIcon /> },
   { label: 'New deal', path: '/deals/new', icon: <AddHomeWorkIcon />, highlight: true },
-  { label: 'Pricing', path: '/pricing', icon: <WorkspacePremiumIcon /> },
-  { label: 'Analytics', path: '/analytics', icon: <InsightsIcon /> }
+  { label: 'Analytics', path: '/analytics', icon: <InsightsIcon /> },
+  { label: 'Pricing', path: '/pricing', icon: <WorkspacePremiumIcon />, minRole: AppRole.Admin },
 ];
 
-/** Honest roadmap items — visible but explicitly not built yet. */
-const upcomingItems = [
-
-  { label: 'Portfolio map', icon: <MapIcon /> },
-];
+const upcomingItems = [{ label: 'Portfolio map', icon: <MapIcon /> }];
 
 export function AppLayout() {
   const { sidebarOpen, toggleSidebar, searchQuery, setSearchQuery } = useUiStore();
   const location = useLocation();
   const navigate = useNavigate();
   const { data: deals } = useDeals();
+  const hasAtLeast = useRoleStore((state) => state.hasAtLeast);
 
-  const highRiskCount = (deals ?? []).filter(
-    (deal) => deal.riskLevel === RiskLevel.High,
-  ).length;
+  const visibleNavItems = navItems.filter((item) => !item.minRole || hasAtLeast(item.minRole));
+
+  const highRiskCount = (deals ?? []).filter((deal) => deal.riskLevel === RiskLevel.High).length;
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -64,8 +71,8 @@ export function AppLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
-      <Box className="aurora aurora-teal" aria-hidden />
-      <Box className="aurora aurora-violet" aria-hidden />
+      <Box className="aurora-layer" aria-hidden />
+
       <AppBar
         position="fixed"
         elevation={0}
@@ -81,10 +88,7 @@ export function AppLayout() {
             <MenuIcon />
           </IconButton>
 
-          <Typography
-            variant="h6"
-            sx={{ fontFamily: '"Space Grotesk", sans-serif', letterSpacing: 0.5, color: accent }}
-          >
+          <Typography variant="h6" sx={{ fontFamily: '"Space Grotesk", sans-serif', letterSpacing: 0.5, color: accent }}>
             PropertyLens
           </Typography>
 
@@ -96,10 +100,7 @@ export function AppLayout() {
               onChange={(event) => handleSearch(event.target.value)}
               sx={{
                 width: { xs: '100%', sm: 380 },
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: surfaces.glass,
-                  borderRadius: 99,
-                },
+                '& .MuiOutlinedInput-root': { backgroundColor: surfaces.glass, borderRadius: 99 },
               }}
               slotProps={{
                 input: {
@@ -112,6 +113,8 @@ export function AppLayout() {
               }}
             />
           </Box>
+
+          <RoleSwitcher />
 
           <Tooltip
             title={
@@ -149,7 +152,7 @@ export function AppLayout() {
       >
         <Toolbar />
         <List sx={{ pt: 2 }}>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <ListItemButton
               key={item.path}
               component={Link}
