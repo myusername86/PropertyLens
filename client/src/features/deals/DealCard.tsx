@@ -1,5 +1,5 @@
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -10,6 +10,7 @@ import type { Deal } from '../../api/types';
 import { MoneyText } from '../../components/MoneyText';
 import { PropertyImage } from '../../components/PropertyImage';
 import { RiskBadge } from '../../components/RiskBadge';
+import { AppRole, useRoleStore } from '../../store/roleStore';
 import { useTransitionDeal } from './hooks';
 
 interface DealCardProps {
@@ -19,6 +20,9 @@ interface DealCardProps {
 
 export function DealCard({ deal, onOpen }: DealCardProps) {
   const transition = useTransitionDeal();
+  const hasAtLeast = useRoleStore((state) => state.hasAtLeast);
+  const canDecide = hasAtLeast(AppRole.Investor);
+  
 
   const act = (event: React.MouseEvent, action: 'approve' | 'reject') => {
     event.stopPropagation();
@@ -35,11 +39,7 @@ export function DealCard({ deal, onOpen }: DealCardProps) {
       </Box>
 
       <CardContent sx={{ pb: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <MoneyText
-          amount={deal.afterRepairValue}
-          variant="h6"
-          sx={{ display: 'block', lineHeight: 1.2 }}
-        />
+        <MoneyText amount={deal.afterRepairValue} variant="h6" sx={{ display: 'block', lineHeight: 1.2 }} />
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
           {deal.address}
         </Typography>
@@ -64,33 +64,29 @@ export function DealCard({ deal, onOpen }: DealCardProps) {
           </Box>
         </Stack>
 
-        {deal.stage === DealStage.Analyzing && (
+        {deal.stage === DealStage.Analyzing && canDecide && (
           <Stack direction="row" spacing={1}>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={(event) => act(event, 'approve')}
-              disabled={transition.isPending}
-            >
+            <Button size="small" variant="contained" onClick={(e) => act(e, 'approve')} disabled={transition.isPending}>
               Approve
             </Button>
-            <Button
-              size="small"
-              color="error"
-              onClick={(event) => act(event, 'reject')}
-              disabled={transition.isPending}
-            >
+            <Button size="small" color="error" onClick={(e) => act(e, 'reject')} disabled={transition.isPending}>
               Reject
             </Button>
           </Stack>
+        )}
+
+        {deal.stage === DealStage.Analyzing && !canDecide && (
+          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Awaiting an Investor's decision
+          </Typography>
         )}
 
         {transition.isError && (
           <Alert
             severity="error"
             sx={{ mt: 1.5 }}
-            onClose={(event) => {
-              event.stopPropagation();
+            onClose={(e) => {
+              e.stopPropagation();
               transition.reset();
             }}
           >
