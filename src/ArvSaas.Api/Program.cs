@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
-using ArvSaas.Api.DevAuth;
+
 using ArvSaas.Application.Features.Deals.Commands;
 using ArvSaas.Infrastructure;
 using ArvSaas.Infrastructure.Persistence;
@@ -112,7 +112,6 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
-    await DevDataSeeder.SeedAsync(db);
 }
 
 app.UseSerilogRequestLogging();
