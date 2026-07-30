@@ -6,6 +6,8 @@ using ArvSaas.Infrastructure.Billing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ArvSaas.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace ArvSaas.Infrastructure;
 
@@ -26,10 +28,24 @@ public static class DependencyInjection
                 npgsql => npgsql.EnableRetryOnFailure(3)));
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        services.AddIdentityCore<ApplicationUser>(options =>
+{
+    // Sensible defaults — not overly strict, matches your "keep it focused" scope
+    options.Password.RequiredLength = 8;
+    options.Password.RequireDigit = true;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.User.RequireUniqueEmail = true;
+})
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
         services.Configure<StripeOptions>(config.GetSection(StripeOptions.SectionName));
         services.AddScoped<IBillingService, StripeBillingService>();
         services.Configure<AiOptions>(config.GetSection(AiOptions.SectionName));
         services.Configure<AiOptions>(config.GetSection(AiOptions.SectionName));
+        services.Configure<JwtOptions>(config.GetSection(JwtOptions.SectionName));
+services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         var aiProvider = config["Ai:Provider"] ?? "Mock";
         switch (aiProvider)

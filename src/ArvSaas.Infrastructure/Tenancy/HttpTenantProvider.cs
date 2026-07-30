@@ -11,7 +11,7 @@ namespace ArvSaas.Infrastructure.Tenancy;
 /// </summary>
 public class HttpTenantProvider(IHttpContextAccessor accessor) : ITenantProvider, ICurrentUser
 {
-    public const string TenantClaim = "extension_TenantId";
+    public const string TenantClaim = "tenantId";
 
     public Guid TenantId =>
         Guid.TryParse(accessor.HttpContext?.User.FindFirstValue(TenantClaim), out var id)
