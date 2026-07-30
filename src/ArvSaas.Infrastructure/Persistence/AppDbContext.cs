@@ -1,16 +1,22 @@
 using ArvSaas.Application.Common.Interfaces;
+
 using ArvSaas.Domain.Common;
 using ArvSaas.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using ArvSaas.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ArvSaas.Infrastructure.Persistence;
 
 public class AppDbContext(
     DbContextOptions<AppDbContext> options,
     ITenantProvider tenantProvider,
-    ICurrentUser currentUser) : DbContext(options), IAppDbContext
+    ICurrentUser currentUser)
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options), IAppDbContext
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Deal> Deals => Set<Deal>();
     public DbSet<ComparableSale> ComparableSales => Set<ComparableSale>();
 
