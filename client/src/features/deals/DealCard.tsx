@@ -1,5 +1,5 @@
-import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -10,7 +10,7 @@ import type { Deal } from '../../api/types';
 import { MoneyText } from '../../components/MoneyText';
 import { PropertyImage } from '../../components/PropertyImage';
 import { RiskBadge } from '../../components/RiskBadge';
-import { AppRole, useRoleStore } from '../../store/roleStore';
+import { useAuthStore } from '../../store/authStore';
 import { useTransitionDeal } from './hooks';
 
 interface DealCardProps {
@@ -18,11 +18,12 @@ interface DealCardProps {
   onOpen?: () => void;
 }
 
+const rolesThatCanDecide = new Set(['Investor', 'Admin']);
+
 export function DealCard({ deal, onOpen }: DealCardProps) {
   const transition = useTransitionDeal();
-  const hasAtLeast = useRoleStore((state) => state.hasAtLeast);
-  const canDecide = hasAtLeast(AppRole.Investor);
-  
+  const role = useAuthStore((state) => state.role);
+  const canDecide = role !== null && rolesThatCanDecide.has(role);
 
   const act = (event: React.MouseEvent, action: 'approve' | 'reject') => {
     event.stopPropagation();
