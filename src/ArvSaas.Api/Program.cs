@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
-using ArvSaas.Api.DevAuth;
+
 using ArvSaas.Application.Features.Deals.Commands;
 using ArvSaas.Infrastructure;
 using ArvSaas.Infrastructure.Persistence;
@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Serilog;
+using System.Text;
+using ArvSaas.Infrastructure.Identity;
+
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
@@ -20,23 +24,26 @@ builder.Host.UseSerilog((ctx, cfg) => cfg
     .Enrich.FromLogContext()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture));
 
-// ---------- Authentication ----------
-// Development: fake authenticated user with a tenant claim (Swagger-testable).
-// Everywhere else: real JWTs from Microsoft Entra External ID.
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services
-        .AddAuthentication(DevAuthenticationHandler.SchemeName)
-        .AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(
-            DevAuthenticationHandler.SchemeName, _ => { });
-}
-else
-{
-    builder.Services
-        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-}
+var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Jwt configuration is missing.");
 
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AnalystOrAbove", p => p.RequireRole("Analyst", "Investor", "Admin"))
     .AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
@@ -63,7 +70,32 @@ builder.Services.AddRateLimiter(o =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter: Bearer {your token}"
+    });
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
 
@@ -80,7 +112,6 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
-    await DevDataSeeder.SeedAsync(db);
 }
 
 app.UseSerilogRequestLogging();
