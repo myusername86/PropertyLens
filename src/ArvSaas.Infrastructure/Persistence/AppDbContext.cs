@@ -19,6 +19,8 @@ public class AppDbContext(
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Deal> Deals => Set<Deal>();
     public DbSet<ComparableSale> ComparableSales => Set<ComparableSale>();
+    public DbSet<WebhookSubscription> WebhookSubscriptions => Set<WebhookSubscription>();
+public DbSet<AutomationLog> AutomationLogs => Set<AutomationLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +33,11 @@ public class AppDbContext(
         // SaaS data isolation.
         modelBuilder.Entity<Deal>()
             .HasQueryFilter(d => d.TenantId == tenantProvider.TenantId);
+            modelBuilder.Entity<WebhookSubscription>()
+    .HasQueryFilter(w => w.TenantId == tenantProvider.TenantId);
+
+modelBuilder.Entity<AutomationLog>()
+    .HasQueryFilter(a => a.TenantId == tenantProvider.TenantId);
 
         base.OnModelCreating(modelBuilder);
     }

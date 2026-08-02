@@ -2,11 +2,6 @@ using ArvSaas.Domain.Common;
 
 namespace ArvSaas.Domain.Entities;
 
-/// <summary>
-/// One row per webhook delivery attempt. This is what makes "Activity Logs"
-/// real data instead of decorative UI — every send, success or failure,
-/// is recorded here.
-/// </summary>
 public class AutomationLog : BaseEntity, ITenantOwned
 {
     public Guid TenantId { get; set; }

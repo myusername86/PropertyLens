@@ -7,7 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ArvSaas.Infrastructure.Identity;
+using ArvSaas.Application.Integrations.Zapier;
+using ArvSaas.Infrastructure.Integrations.Zapier;
 using Microsoft.AspNetCore.Identity;
+
 
 namespace ArvSaas.Infrastructure;
 
@@ -17,6 +20,7 @@ public static class DependencyInjection
         this IServiceCollection services, IConfiguration config)
     {
         services.AddHttpContextAccessor();
+        services.AddHttpClient<IZapierWebhookDispatcher, WebhookDispatcher>();
 
         services.AddScoped<HttpTenantProvider>();
         services.AddScoped<ITenantProvider>(sp => sp.GetRequiredService<HttpTenantProvider>());
