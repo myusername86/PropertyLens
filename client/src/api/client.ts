@@ -1,5 +1,4 @@
-import { useRoleStore } from '../store/roleStore';
-
+import { useAuthStore } from '../store/authStore';
 const BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
 
 export class ApiError extends Error {
@@ -21,19 +20,58 @@ async function parseError(response: Response): Promise<string> {
   }
 }
 
-function withRole(path: string): string {
-  const role = useRoleStore.getState().role;
-  const separator = path.includes('?') ? '&' : '?';
-  return `${path}${separator}role=${role}`;
+async function tryRefresh(): Promise<boolean> {
+  const { refreshToken, setSession, clearSession } = useAuthStore.getState();
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      clearSession();
+      return false;
+    }
+
+    setSession(await response.json());
+    return true;
+  } catch {
+    clearSession();
+    return false;
+  }
+}
+
+async function doFetch(path: string, init?: RequestInit): Promise<Response> {
+  const { accessToken } = useAuthStore.getState();
+  return fetch(`${BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...init?.headers,
+    },
+  });
 }
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE_URL}${withRole(path)}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
+  let response = await doFetch(path, init);
+
+  if (response.status === 401 && useAuthStore.getState().accessToken) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      response = await doFetch(path, init);
+    }
+  }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      useAuthStore.getState().clearSession();
+    }
     throw new ApiError(response.status, await parseError(response));
   }
 
