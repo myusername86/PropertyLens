@@ -12,5 +12,7 @@ public interface IAppDbContext
     DbSet<Tenant> Tenants { get; }
     DbSet<Deal> Deals { get; }
     DbSet<ComparableSale> ComparableSales { get; }
+    DbSet<WebhookSubscription> WebhookSubscriptions { get; }
+    DbSet<AutomationLog> AutomationLogs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
