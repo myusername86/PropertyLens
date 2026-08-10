@@ -13,6 +13,13 @@ interface AuthState {
   clearSession: () => void;
 }
 
+/**
+ * Persisted auth session. Tokens live in localStorage via Zustand's
+ * persist middleware — acceptable for this app's threat model (no
+ * sensitive PII beyond what the API itself already exposes to an
+ * authenticated user). A stricter deployment would move the refresh
+ * token to an httpOnly cookie instead.
+ */
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({

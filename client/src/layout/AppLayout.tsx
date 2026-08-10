@@ -8,7 +8,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import AppBar from '@mui/material/AppBar';
-import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -25,9 +24,9 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { RiskLevel } from '../api/types';
-import { RoleSwitcher } from '../components/RoleSwitcher';
+import { UserMenu } from '../components/UserMenu';
 import { useDeals } from '../features/deals/hooks';
-import { AppRole, useRoleStore } from '../store/roleStore';
+import { useAuthStore } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
 import { accent, surfaces } from '../theme';
 
@@ -38,7 +37,7 @@ interface NavItem {
   path: string;
   icon: React.ReactNode;
   highlight?: boolean;
-  minRole?: AppRole;
+  minRole?: string;
 }
 
 const navItems: NavItem[] = [
@@ -46,7 +45,7 @@ const navItems: NavItem[] = [
   { label: 'Deal pipeline', path: '/deals', icon: <ViewKanbanIcon /> },
   { label: 'New deal', path: '/deals/new', icon: <AddHomeWorkIcon />, highlight: true },
   { label: 'Analytics', path: '/analytics', icon: <InsightsIcon /> },
-  { label: 'Pricing', path: '/pricing', icon: <WorkspacePremiumIcon />, minRole: AppRole.Admin },
+  { label: 'Pricing', path: '/pricing', icon: <WorkspacePremiumIcon />, minRole: 'Admin' },
 ];
 
 const upcomingItems = [{ label: 'Portfolio map', icon: <MapIcon /> }];
@@ -56,9 +55,9 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: deals } = useDeals();
-  const hasAtLeast = useRoleStore((state) => state.hasAtLeast);
+  const role = useAuthStore((state) => state.role);
 
-  const visibleNavItems = navItems.filter((item) => !item.minRole || hasAtLeast(item.minRole));
+  const visibleNavItems = navItems.filter((item) => !item.minRole || item.minRole === role);
 
   const highRiskCount = (deals ?? []).filter((deal) => deal.riskLevel === RiskLevel.High).length;
 
@@ -114,8 +113,6 @@ export function AppLayout() {
             />
           </Box>
 
-          <RoleSwitcher />
-
           <Tooltip
             title={
               highRiskCount > 0
@@ -130,9 +127,7 @@ export function AppLayout() {
             </IconButton>
           </Tooltip>
 
-          <Avatar sx={{ width: 34, height: 34, bgcolor: surfaces.glass, color: accent, fontSize: 14, fontWeight: 700 }}>
-            DU
-          </Avatar>
+          <UserMenu />
         </Toolbar>
       </AppBar>
 
